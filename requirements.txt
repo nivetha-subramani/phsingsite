@@ -8,3 +8,4 @@ tqdm
 flask
 pandas
 gunicorn
+beautifulsoup4
