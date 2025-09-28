@@ -10,3 +10,4 @@ pandas
 gunicorn
 beautifulsoup4
 requests
+googlesearch-python
