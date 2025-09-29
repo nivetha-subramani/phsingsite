@@ -5,10 +5,12 @@ import numpy as np
 import pickle
 from feature import FeatureExtraction
 
-# Load model
-file = open("pickle/model.pkl","rb")
-gbc = pickle.load(file)
-file.close()
+import os
+
+file_path = os.path.join(os.path.dirname(__file__), "pickle", "model.pkl")
+with open(file_path, "rb") as file:
+    gbc = pickle.load(file)
+
 
 # --- Page Config ---
 st.set_page_config(page_title="Phishing URL Detector", page_icon="🔒", layout="centered")
