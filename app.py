@@ -1,43 +1,52 @@
-# app.py
+# phishing site detection with Streamlit
+
 import streamlit as st
 import numpy as np
 import pandas as pd
-import pickle
+import joblib
 import warnings
-from feature import FeatureExtraction
+from feature import FeatureExtraction   # make sure feature.py is in the same folder
 
-warnings.filterwarnings("ignore")
+warnings.filterwarnings('ignore')
 
-# Load the trained model
-with open("pickle/model.pkl", "rb") as file:
-    gbc = pickle.load(file)
+# Load model
+@st.cache_resource
+def load_model():
+    return joblib.load("pickle/model.pkl")
 
-# Streamlit app
-st.set_page_config(page_title="Phishing URL Detector", page_icon="🔐", layout="centered")
+gbc = load_model()
 
+# Streamlit UI
+st.set_page_config(page_title="Phishing Website Detector", page_icon="🛡️", layout="centered")
+
+st.title("🛡️ Phishing Website Detection")
 st.markdown(
-    "<h1 style='text-align: center; color: #FF4B4B;'>🔐 Phishing URL Detection</h1>",
-    unsafe_allow_html=True,
+    """
+    Enter a website URL below and check if it is **Safe or Phishing**.
+    """
 )
 
-# Input box
-url = st.text_input("Enter the URL to check:")
+# Input field
+url = st.text_input("🔗 Enter Website URL:")
 
-if st.button("Check URL"):
-    if url:
-        # Extract features
-        obj = FeatureExtraction(url)
-        x = np.array(obj.getFeaturesList()).reshape(1, 30)
-
-        # Prediction
-        y_pred = gbc.predict(x)[0]
-        y_pro_phishing = gbc.predict_proba(x)[0, 0]
-        y_pro_non_phishing = gbc.predict_proba(x)[0, 1]
-
-        # Show results with colors
-        if y_pred == 1:
-            st.success(f"✅ This URL looks SAFE with {y_pro_non_phishing*100:.2f}% confidence.")
-        else:
-            st.error(f"⚠️ This URL looks PHISHING with {y_pro_phishing*100:.2f}% confidence.")
-    else:
+if st.button("Check"):
+    if url.strip() == "":
         st.warning("⚠️ Please enter a valid URL.")
+    else:
+        try:
+            obj = FeatureExtraction(url)
+            x = np.array(obj.getFeaturesList()).reshape(1, 30)
+
+            # Prediction
+            y_pred = gbc.predict(x)[0]
+            y_pro_phishing = gbc.predict_proba(x)[0, 0]
+            y_pro_non_phishing = gbc.predict_proba(x)[0, 1]
+
+            # Output with colors
+            if y_pred == 1:
+                st.success(f"✅ Safe Website! ({y_pro_non_phishing*100:.2f}% confidence)")
+            else:
+                st.error(f"🚨 Phishing Website Detected! ({y_pro_phishing*100:.2f}% confidence)")
+
+        except Exception as e:
+            st.error(f"❌ Error: {str(e)}")
